@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'cleanscreenapi',
+    'cleanscreen'
 ]
 
 CORS_ORIGIN_WHITELIST = (
@@ -131,4 +132,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = 'cleanscreen.User'
+AUTH_USER_MODEL = 'cleanscreenapi.User'

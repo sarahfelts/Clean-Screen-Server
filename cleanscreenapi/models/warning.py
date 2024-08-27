@@ -2,11 +2,11 @@ from django.db import models
 from .user import User
 from .movie import Movie
 
-class Warning(models.Model):
+class WarningIterable(models.Model):
     SEVERITY_CHOICES = [
-        ('Close your eyes'),
-        ('Leave the room'),
-        ('Leave the theater'),
+        ('close_eyes', 'Close your eyes'),
+        ('leave_room', 'Leave the room'),
+        ('leave_theater', 'Leave the theater'),
     ]
 
     timestamp = models.TimeField()

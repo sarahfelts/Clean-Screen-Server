@@ -1,8 +1,9 @@
 from django.db import models
 from .warning_detail import WarningDetail
+from .warning import WarningIterable
 
 class WarningDetailsMap(models.Model):
-    warning = models.ForeignKey(Warning, on_delete=models.CASCADE, related_name='warning_details_maps')
+    warning = models.ForeignKey(WarningIterable, on_delete=models.CASCADE, related_name='warning_details_maps')
     detail = models.ForeignKey(WarningDetail, on_delete=models.CASCADE, related_name='warning_details_maps')
 
     class Meta:
