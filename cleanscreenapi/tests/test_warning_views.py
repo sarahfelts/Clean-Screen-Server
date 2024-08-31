@@ -14,7 +14,7 @@ def test_create_warning(api_client, user, movie):
         'user': user.id
     }
     response = api_client.post(url, data, format='json')
-    print(response.data)  # Print response data to debug
+    print(response.data)
     assert response.status_code == status.HTTP_201_CREATED
 
 @pytest.mark.django_db
