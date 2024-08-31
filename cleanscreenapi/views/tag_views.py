@@ -1,17 +1,22 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import Tag
-from cleanscreenapi.forms import TagForm
 
-def create_tag(request):
-    if request.method == 'POST':
-        form = TagForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('tag_list')
-    else:
-        form = TagForm()
-    return render(request, 'tag_form.html', {'form': form})
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
 
-def tag_list(request):
-    tags = Tag.objects.all()
-    return render(request, 'tag_list.html', {'tags': tags})
+class TagView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Tag.objects.all().order_by('name')
+        serializer = TagSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        serializer = TagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,24 +1,34 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import SavedMovie
-from cleanscreenapi.forms import SavedMovieForm
 
-def create_saved_movie(request):
-    if request.method == 'POST':
-        form = SavedMovieForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('saved_movie_list')
-    else:
-        form = SavedMovieForm()
-    return render(request, 'saved_movie_form.html', {'form': form})
+class SavedMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedMovie
+        fields = '__all__'
 
-def saved_movie_list(request):
-    saved_movies = SavedMovie.objects.all()
-    return render(request, 'saved_movie_list.html', {'saved_movies': saved_movies})
+class SavedMovieView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = SavedMovie.objects.all().order_by('id')
+        serializer = SavedMovieSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def delete_saved_movie(request, saved_movie_id):
-    saved_movie = get_object_or_404(SavedMovie, id=saved_movie_id)
-    if request.method == 'POST':
+    def create(self, request):
+        serializer = SavedMovieSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = SavedMovie.objects.all()
+        saved_movie = get_object_or_404(queryset, pk=pk)
+        serializer = SavedMovieSerializer(saved_movie)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        queryset = SavedMovie.objects.all()
+        saved_movie = get_object_or_404(queryset, pk=pk)
         saved_movie.delete()
-        return redirect('saved_movie_list')
-    return render(request, 'confirm_delete.html', {'object': saved_movie})
+        return Response(status=status.HTTP_204_NO_CONTENT)

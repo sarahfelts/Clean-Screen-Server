@@ -1,24 +1,34 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import WarningTag
-from cleanscreenapi.forms import WarningTagForm
 
-def create_warning_tag(request):
-    if request.method == 'POST':
-        form = WarningTagForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('warning_tag_list')
-    else:
-        form = WarningTagForm()
-    return render(request, 'warning_tag_form.html', {'form': form})
+class WarningTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarningTag
+        fields = '__all__'
 
-def warning_tag_list(request):
-    tags = WarningTag.objects.all()
-    return render(request, 'warning_tag_list.html', {'tags': tags})
+class WarningTagView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = WarningTag.objects.all().order_by('id')
+        serializer = WarningTagSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def delete_warning_tag(request, tag_id):
-    tag = get_object_or_404(WarningTag, id=tag_id)
-    if request.method == 'POST':
-        tag.delete()
-        return redirect('warning_tag_list')
-    return render(request, 'confirm_delete.html', {'object': tag})
+    def create(self, request):
+        serializer = WarningTagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = WarningTag.objects.all()
+        warning_tag = get_object_or_404(queryset, pk=pk)
+        serializer = WarningTagSerializer(warning_tag)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        queryset = WarningTag.objects.all()
+        warning_tag = get_object_or_404(queryset, pk=pk)
+        warning_tag.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

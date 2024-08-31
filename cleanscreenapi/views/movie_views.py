@@ -1,40 +1,43 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import Movie
-from cleanscreenapi.forms import MovieForm
 
-def create_movie(request):
-    if request.method == 'POST':
-        form = MovieForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('movie_list')
-    else:
-        form = MovieForm()
-    return render(request, 'movie_form.html', {'form': form})
+class MovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = '__all__'
 
-def movie_list(request):
-    movies = Movie.objects.all()
-    return render(request, 'movie_list.html', {'movies': movies})
+class MovieView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Movie.objects.all().order_by('title')
+        serializer = MovieSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def movie_detail(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
-    return render(request, 'movie_detail.html', {'movie': movie})
+    def create(self, request):
+        serializer = MovieSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def update_movie(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
-    if request.method == 'POST':
-        form = MovieForm(request.POST, instance=movie)
-        if form.is_valid():
-            form.save()
-            return redirect('movie_detail', movie_id=movie.id)
-    else:
-        form = MovieForm(instance=movie)
-    return render(request, 'movie_form.html', {'form': form})
+    def retrieve(self, request, pk=None):
+        queryset = Movie.objects.all()
+        movie = get_object_or_404(queryset, pk=pk)
+        serializer = MovieSerializer(movie)
+        return Response(serializer.data)
 
-def delete_movie(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
-    if request.method == 'POST':
+    def update(self, request, pk=None):
+        queryset = Movie.objects.all()
+        movie = get_object_or_404(queryset, pk=pk)
+        serializer = MovieSerializer(movie, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        queryset = Movie.objects.all()
+        movie = get_object_or_404(queryset, pk=pk)
         movie.delete()
-        return redirect('movie_list')
-    return render(request, 'confirm_delete.html', {'object': movie})
-
+        return Response(status=status.HTTP_204_NO_CONTENT)

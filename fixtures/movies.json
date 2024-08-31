@@ -1,0 +1,38 @@
+[
+    {
+        "model": "cleanscreenapi.movie",
+        "pk": 1,
+        "fields": {
+            "title": "The Exorcist",
+            "year": 1973,
+            "rating": "R",
+            "genre": "Horror",
+            "user_rating_total": 4,
+            "user_rating_count": 265
+        }
+    },
+    {
+        "model": "cleanscreenapi.movie",
+        "pk": 2,
+        "fields": {
+            "title": "Babylon",
+            "year": 2022,
+            "rating": "R",
+            "genre": "Drama",
+            "user_rating_total": 7.1,
+            "user_rating_count": 391
+        }
+    },
+    {
+        "model": "cleanscreenapi.movie",
+        "pk": 3,
+        "fields": {
+            "title": "It",
+            "year": 2017,
+            "rating": "R",
+            "genre": "Horror",
+            "user_rating_total": 7.3,
+            "user_rating_count": 871
+        }
+    }
+]

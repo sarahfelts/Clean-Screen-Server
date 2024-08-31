@@ -1,39 +1,43 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import WarningIterable
-from cleanscreenapi.forms import WarningForm
 
-def create_warning(request):
-    if request.method == 'POST':
-        form = WarningForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('warning_list')
-    else:
-        form = WarningForm()
-    return render(request, 'warning_form.html', {'form': form})
+class WarningSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarningIterable
+        fields = '__all__'
 
-def warning_list(request):
-    warnings = WarningIterable.objects.all()
-    return render(request, 'warning_list.html', {'warnings': warnings})
+class WarningView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = WarningIterable.objects.all().order_by('timestamp')
+        serializer = WarningSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def warning_detail(request, warning_id):
-    warning = get_object_or_404(WarningIterable, id=warning_id)
-    return render(request, 'warning_detail.html', {'warning': warning})
+    def create(self, request):
+        serializer = WarningSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def update_warning(request, warning_id):
-    warning = get_object_or_404(WarningIterable, id=warning_id)
-    if request.method == 'POST':
-        form = WarningForm(request.POST, instance=warning)
-        if form.is_valid():
-            form.save()
-            return redirect('warning_detail', warning_id=warning.id)
-    else:
-        form = WarningForm(instance=warning)
-    return render(request, 'warning_form.html', {'form': form})
+    def retrieve(self, request, pk=None):
+        queryset = WarningIterable.objects.all()
+        warning = get_object_or_404(queryset, pk=pk)
+        serializer = WarningSerializer(warning)
+        return Response(serializer.data)
 
-def delete_warning(request, warning_id):
-    warning = get_object_or_404(WarningIterable, id=warning_id)
-    if request.method == 'POST':
+    def update(self, request, pk=None):
+        queryset = WarningIterable.objects.all()
+        warning = get_object_or_404(queryset, pk=pk)
+        serializer = WarningSerializer(warning, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        queryset = WarningIterable.objects.all()
+        warning = get_object_or_404(queryset, pk=pk)
         warning.delete()
-        return redirect('warning_list')
-    return render(request, 'confirm_delete.html', {'object': warning})
+        return Response(status=status.HTTP_204_NO_CONTENT)

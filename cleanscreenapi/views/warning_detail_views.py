@@ -1,28 +1,37 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import WarningDetail
-from cleanscreenapi.forms import WarningDetailForm
 
-def create_warning_detail(request):
-    if request.method == 'POST':
-        form = WarningDetailForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('warning_detail_list')
-    else:
-        form = WarningDetailForm()
-    return render(request, 'warning_detail_form.html', {'form': form})
+class WarningDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarningDetail
+        fields = '__all__'
 
-def warning_detail_list(request):
-    details = WarningDetail.objects.all()
-    return render(request, 'warning_detail_list.html', {'details': details})
+class WarningDetailView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = WarningDetail.objects.all().order_by('name')
+        serializer = WarningDetailSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def update_warning_detail(request, detail_id):
-    detail = get_object_or_404(WarningDetail, id=detail_id)
-    if request.method == 'POST':
-        form = WarningDetailForm(request.POST, instance=detail)
-        if form.is_valid():
-            form.save()
-            return redirect('warning_detail_list')
-    else:
-        form = WarningDetailForm(instance=detail)
-    return render(request, 'warning_detail_form.html', {'form': form})
+    def create(self, request):
+        serializer = WarningDetailSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = WarningDetail.objects.all()
+        warning_detail = get_object_or_404(queryset, pk=pk)
+        serializer = WarningDetailSerializer(warning_detail)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        queryset = WarningDetail.objects.all()
+        warning_detail = get_object_or_404(queryset, pk=pk)
+        serializer = WarningDetailSerializer(warning_detail, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

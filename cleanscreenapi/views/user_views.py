@@ -1,28 +1,37 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import serializers, status, viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from cleanscreenapi.models import User
-from cleanscreenapi.forms import UserCreationForm, UserChangeForm
 
-def create_user(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('user_list')
-    else:
-        form = UserCreationForm()
-    return render(request, 'user_form.html', {'form': form})
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
 
-def read_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    return render(request, 'user_detail.html', {'user': user})
+class UserView(viewsets.ViewSet):
+    def list(self, request):
+        queryset = User.objects.all().order_by('username')
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-def update_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    if request.method == 'POST':
-        form = UserChangeForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('user_detail', user_id=user.id)
-    else:
-        form = UserChangeForm(instance=user)
-    return render(request, 'user_form.html', {'form': form})
+    def create(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
