@@ -5,8 +5,16 @@ from rest_framework import status
 @pytest.mark.django_db
 def test_create_warning(api_client, user, movie):
     url = reverse('warning-list')
-    data = {'timestamp': '00:15:00', 'description': 'Another Test Warning', 'tag': 'Another Test Tag', 'severity': 'Leave the room', 'movie': movie.id, 'user': user.id}
-    response = api_client.post(url, data)
+    data = {
+        'timestamp': '00:15:00',
+        'description': 'Another Test Warning',
+        'tag': 'Another Test Tag',
+        'severity': 'leave_room',
+        'movie': movie.id,
+        'user': user.id
+    }
+    response = api_client.post(url, data, format='json')
+    print(response.data)  # Print response data to debug
     assert response.status_code == status.HTTP_201_CREATED
 
 @pytest.mark.django_db

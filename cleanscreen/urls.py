@@ -14,7 +14,7 @@ from cleanscreenapi.views import (
 router = DefaultRouter()
 router.register(r'users', user_views.UserView, basename='user')
 router.register(r'movies', movie_views.MovieView, basename='movie')
-router.register(r'warnings', warning_views.WarningView, basename='warning')
+router.register(r'warnings', warning_views.WarningIterableView, basename='warning')
 router.register(r'tags', tag_views.TagView, basename='tag')
 router.register(r'warning-details', warning_detail_views.WarningDetailView, basename='warningdetail')
 router.register(r'warning-tags', warning_tag_views.WarningTagView, basename='warningtag')
