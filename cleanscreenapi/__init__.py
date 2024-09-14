@@ -1,1 +1,0 @@
-from .firebase_setup import verify_firebase_token
