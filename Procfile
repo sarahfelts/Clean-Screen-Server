@@ -1,2 +1,2 @@
-web: gunicorn cleanscreen.wsgi
+web: gunicorn cleanscreen.wsgi --log-file -
 release: python manage.py makemigrations; python manage.py migrate;
