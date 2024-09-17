@@ -16,7 +16,6 @@ gunicorn = "*"
 whitenoise = "*"
 psycopg2-binary = "*"
 python-dotenv = "*"
-firebase-admin = "*"
 
 [dev-packages]
 
