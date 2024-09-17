@@ -1,22 +1,37 @@
+import json
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from cleanscreenapi.firebase_setup import verify_firebase_token
+from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
 
-def sign_up(request):
-    return JsonResponse({'message': 'User signed up successfully'})
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
 
-def sign_in(request):
-    return JsonResponse({'message': 'User signed in successfully'})
+            user = authenticate(request, email=email, password=password)
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'message': 'Login successful'}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    else:
+        return JsonResponse({'error': 'POST request required'}, status=405)
 
-def protected_view(request):
-    auth_header = request.headers.get('Authorization')
+@csrf_exempt
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+        return JsonResponse({'message': 'Logged out successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'POST request required'}, status=405)
 
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return JsonResponse({'error': 'No token provided'}, status=401)
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
 
-    id_token = auth_header.split('Bearer ')[1]
-    decoded_token = verify_firebase_token(id_token)
-
-    if decoded_token is None:
-        return JsonResponse({'error': 'Invalid token'}, status=401)
-
-    return JsonResponse({'message': 'This route is protected'})

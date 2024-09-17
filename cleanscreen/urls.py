@@ -8,6 +8,9 @@ from cleanscreenapi.views import (
     warning_detail_views,
     warning_tag_views,
     saved_movie_views,
+    login_view,
+    logout_view,
+    get_csrf_token
 )
 
 # Create a router and register our viewsets with it
@@ -20,7 +23,9 @@ router.register(r'warning-details', warning_detail_views.WarningDetailView, base
 router.register(r'warning-tags', warning_tag_views.WarningTagView, basename='warningtag')
 router.register(r'saved-movies', saved_movie_views.SavedMovieView, basename='savedmovie')
 
-# The API URLs are now determined automatically by the router
 urlpatterns = [
     path('', include(router.urls)),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('csrf_token/', get_csrf_token, name='csrf_token'),
 ]
